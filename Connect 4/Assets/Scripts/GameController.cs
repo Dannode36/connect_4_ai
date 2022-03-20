@@ -24,6 +24,7 @@ public class GameController : MonoBehaviour
     public Player currentPlayer;
     Player previousPlayer;
 
+    public GameObject baseCollider;
     public Transform[] spawnLocations;
     public GameObject BlueDisk;
     public GameObject RedDisk;
@@ -46,6 +47,8 @@ public class GameController : MonoBehaviour
             LoadCoop();
         }
         canvasManager = GameCanvas.GetComponent<CanvasManger>();
+
+        GameManager.NewGame();
     }
 
     Color clear = new Color(0, 0, 0, 0);
@@ -98,27 +101,23 @@ public class GameController : MonoBehaviour
         displayPreview = true;
     }
 
+    IEnumerator BoardReset()
+    {
+        yield return new WaitForSeconds(4);
+        baseCollider.SetActive(false);
+        yield return new WaitForSeconds(2);
+
+        Scene scene = SceneManager.GetActiveScene();
+        SceneManager.LoadScene(scene.name);
+    }
+
     void Win(Player winner, Player looser, bool vsAI)
     {
         canvasManager.DisplayWinTitle(winner.name, looser.name);
         won = true;
-        GameManager.Win(currentPlayer, previousPlayer, vsAI);
+        GameManager.Win(currentPlayer);
 
         StartCoroutine("BoardReset");
-    }
-
-    IEnumerator BoardReset()
-    {
-        int count = 4;
-        for (int i = 0; i < 4; i++)
-        {
-            canvasManager.UpdateResetCounter(count);
-            yield return new WaitForSeconds(1f);
-            count--;
-        }
-
-        Scene scene = SceneManager.GetActiveScene();
-        SceneManager.LoadScene(scene.name);
     }
 
     public void AddDisk(int collum)

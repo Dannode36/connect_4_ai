@@ -6,29 +6,29 @@ using UnityEngine.SceneManagement;
 
 public static class GameManager
 {
-    static List<Tuple<Player, Player, bool>> matchHistory = new List<Tuple<Player, Player, bool>>();
+    static Dictionary<Player, int> matchHistory = new Dictionary<Player, int>();
 
     static public bool single = true;
 
-    public static int ReadPlayerScore()
+    public static int ReadPlayerScore(Player player)
     {
-        return 0;
+        return matchHistory[player];
     }
 
-
-    public static void Win(Player winner, Player looser, bool vsAI)
+    public static void Win(Player player)
     {
-        matchHistory.Add(new Tuple<Player, Player, bool>(winner, looser, vsAI));
-        Debug.LogWarning($"{winner.name} won against {looser.name}!");
+        if (matchHistory.ContainsKey(player))
+        {
+            matchHistory[player]++;
+        }
+        else
+        {
+            matchHistory.Add(player, 1);
+        }
     }
 
-    static void WriteMatchHistory(List<Tuple<string, string>> history)
+    public static void NewGame()
     {
-        
-    }
-
-    static List<Tuple<Player, Player>> ReadMatchHistory()
-    {
-        return null;
+        matchHistory = new Dictionary<Player, int>();
     }
 }

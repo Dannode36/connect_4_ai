@@ -921,6 +921,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 222984222}
   m_CullTransparentMesh: 1
+--- !u!1 &319041865 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9133521027964820576, guid: 297144d2d3f9f88488f0da0fa354ba5f, type: 3}
+  m_PrefabInstance: {fileID: 9133521028280154622}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -1237,6 +1242,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   aiThinking: 0
+  baseCollider: {fileID: 319041865}
   spawnLocations:
   - {fileID: 9133521028280154629}
   - {fileID: 9133521028280154628}
@@ -2343,6 +2349,10 @@ PrefabInstance:
     - target: {fileID: 7163079939532798728, guid: 297144d2d3f9f88488f0da0fa354ba5f, type: 3}
       propertyPath: m_RootOrder
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 9133521027964820576, guid: 297144d2d3f9f88488f0da0fa354ba5f, type: 3}
+      propertyPath: m_Name
+      value: base
       objectReference: {fileID: 0}
     - target: {fileID: 9133521027964820577, guid: 297144d2d3f9f88488f0da0fa354ba5f, type: 3}
       propertyPath: m_RootOrder
