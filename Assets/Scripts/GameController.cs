@@ -36,7 +36,7 @@ public class GameController : MonoBehaviour
 
     private void Start()
     {
-        Application.targetFrameRate = 60;
+        //Application.targetFrameRate = 60;
 
         if (GameManager.single)
         {
@@ -54,11 +54,18 @@ public class GameController : MonoBehaviour
     Color clear = new Color(0, 0, 0, 0);
     void Update()
     {
-        float screenPercent = Input.mousePosition.x / Screen.width * 100;
-        if (displayPreview && screenPercent > 25 && screenPercent < 75)
+        if (!won)
         {
-            dropPreview.transform.position = new Vector3(Input.mousePosition.x, dropPreview.transform.position.y, dropPreview.transform.position.z);
-            dropPreview.color = currentPlayer.id == 1 ? new Color(1, 0, 0, 0.4f) : new Color(1, 1, 0, 0.4f);
+            float screenPercent = Input.mousePosition.x / Screen.width * 100;
+            if (displayPreview && screenPercent > 25 && screenPercent < 75)
+            {
+                dropPreview.transform.position = new Vector3(Input.mousePosition.x, dropPreview.transform.position.y, dropPreview.transform.position.z);
+                dropPreview.color = currentPlayer.id == 1 ? new Color(1, 0, 0, 0.4f) : new Color(1, 1, 0, 0.4f);
+            }
+            else
+            {
+                dropPreview.color = clear;
+            }
         }
         else
         {

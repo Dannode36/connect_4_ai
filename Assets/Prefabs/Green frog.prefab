@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 6661327585790792700}
   - component: {fileID: 2701456536995227362}
   - component: {fileID: 5442856366033770608}
+  - component: {fileID: 8529542106672919333}
   m_Layer: 5
   m_Name: Green frog
   m_TagString: Untagged
@@ -112,3 +113,15 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 2
+--- !u!114 &8529542106672919333
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6661327585790792702}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03ae60d8f4fd1f449a4ba8eb18318198, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
