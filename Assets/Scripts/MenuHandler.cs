@@ -7,9 +7,11 @@ using UnityEngine.Rendering;
 
 public class MenuHandler : MonoBehaviour
 {
-    RenderPipelineAsset Render = GraphicsSettings.renderPipelineAsset;
-
     public GameObject MenuCanvas;
+    public GameObject PreLoadCanvas;
+    public TMP_InputField FirstNameInput;
+    public TMP_InputField SecondNameInput;
+
     public GameObject SettingsCanvas;
 
     RenderPipelineAsset rpa;
@@ -27,11 +29,22 @@ public class MenuHandler : MonoBehaviour
     public void LoadMainScene()
     {
         SceneManager.LoadSceneAsync(1);
+        print(FirstNameInput.text);
+        GameManager.PlayerOneName = FirstNameInput.text;
+        GameManager.PlayerTwoName = SecondNameInput.text;
     }
 
     public void LoadMenuScene()
     {
         SceneManager.LoadSceneAsync(0);
+    }
+
+    public void PreLoadGame()
+    {
+        MenuCanvas.SetActive(false);
+        PreLoadCanvas.SetActive(true);
+
+        SecondNameInput.interactable = !GameManager.single;
     }
 
     public void OpenSettings()

@@ -49,6 +49,8 @@ public class GameController : MonoBehaviour
         canvasManager = GameCanvas.GetComponent<CanvasManger>();
 
         GameManager.NewGame();
+
+        print(GameManager.PlayerOneName);
     }
 
     Color clear = new Color(0, 0, 0, 0);
