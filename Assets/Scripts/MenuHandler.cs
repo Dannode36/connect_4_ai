@@ -4,9 +4,10 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
 using UnityEngine.Rendering;
+
 public class MenuHandler : MonoBehaviour
 {
-    //var Render = GraphicsSettings.renderPipelineAsset;
+    RenderPipelineAsset Render = GraphicsSettings.renderPipelineAsset;
 
     public GameObject MenuCanvas;
     public GameObject SettingsCanvas;
@@ -50,7 +51,6 @@ public class MenuHandler : MonoBehaviour
     public void ChangeAntialisingMode(int val)
     {
         Debug.LogWarning("Num: " + val);
-        rpa.
     }
     public void ChangeShadowQuality(int i)
     {

@@ -6,29 +6,42 @@ using UnityEngine.SceneManagement;
 
 public static class GameManager
 {
-    static Dictionary<Player, int> matchHistory = new Dictionary<Player, int>();
+    static Dictionary<Player, List<Tuple<Player, Player>>> matchHistory = new Dictionary<Player, List<Tuple<Player, Player>>>();
 
     static public bool single = true;
+    static public string PlayerOneName = "Player 1";
+    static public string PlayerTwoName = "Player 2";
 
-    public static int ReadPlayerScore(Player player)
+    public static List<Tuple<Player, Player>> ReadPlayerScore(Player player)
     {
         return matchHistory[player];
     }
 
-    public static void Win(Player player)
+    public static void Win(Player winner, Player loser)
     {
-        if (matchHistory.ContainsKey(player))
+        //Add win for winner
+        if (matchHistory.ContainsKey(winner))
         {
-            matchHistory[player]++;
+            matchHistory[winner].Add(Tuple.Create(winner, loser));
         }
         else
         {
-            matchHistory.Add(player, 1);
+            matchHistory.Add(winner, new List<Tuple<Player, Player>>() { Tuple.Create(winner, loser) });
+        }
+
+        //Add loss for loser
+        if (matchHistory.ContainsKey(loser))
+        {
+            matchHistory[loser].Add(Tuple.Create(winner, loser));
+        }
+        else
+        {
+            matchHistory.Add(loser, new List<Tuple<Player, Player>>() { Tuple.Create(winner, loser) });
         }
     }
 
     public static void NewGame()
     {
-        matchHistory = new Dictionary<Player, int>();
+        matchHistory = new Dictionary<Player, List<Tuple<Player, Player>>>();
     }
 }

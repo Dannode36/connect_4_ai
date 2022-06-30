@@ -76,7 +76,7 @@ public class GameController : MonoBehaviour
     void LoadSingleplayer()
     {
         vsAI = true;
-        board = new Board(6, 7, new Player(1, "cherry"), new MinMaxAI(2, this));
+        board = new Board(6, 7, new Player(1, GameManager.PlayerOneName), new MinMaxAI(2, this));
         currentPlayer = board.player1;
         previousPlayer = board.ai;
         gameReady = true;
@@ -84,7 +84,7 @@ public class GameController : MonoBehaviour
 
     void LoadCoop()
     {
-        board = new Board(6, 7, new Player(1, "cherry"), new Player(2, "cheese"));
+        board = new Board(6, 7, new Player(1, GameManager.PlayerOneName), new Player(2, GameManager.PlayerTwoName));
         currentPlayer = board.player1;
         previousPlayer = board.player2;
         gameReady = true;
@@ -122,7 +122,7 @@ public class GameController : MonoBehaviour
     {
         canvasManager.DisplayWinTitle(winner.name, looser.name);
         won = true;
-        GameManager.Win(currentPlayer);
+        GameManager.Win(winner, looser);
 
         StartCoroutine("BoardReset");
     }
