@@ -22,7 +22,7 @@ public class CanvasManger : MonoBehaviour
     };
 
     public TMP_Text WinTitle;
-    public TMP_Text ResetCoutdown;
+    public GameObject ResetButton;
 
     public void DisplayWinTitle(string winnerName, string looserName)
     {
@@ -32,9 +32,14 @@ public class CanvasManger : MonoBehaviour
         WinTitle.text = $"{winnerName} {winMessages[index]} {looserName}!";
     }
 
-    public void UpdateResetCounter(int count)
+    public void DisplayWinText(string text)
     {
-        ResetCoutdown.text = $"Reset: {count}";
+        WinTitle.text = $"{text}!";
+    }
+
+    public void ShowResetButton(bool active)
+    {
+        ResetButton.SetActive(active);
     }
 
     public void LoadMenuScene()

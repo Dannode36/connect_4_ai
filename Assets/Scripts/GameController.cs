@@ -8,9 +8,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using Debug = UnityEngine.Debug;
+using System.Reflection;
 
 public class GameController : MonoBehaviour
 {
+    [InspectorButton("QuickEndGame")]
+    public bool EndGame;
+
     bool won = false;
     bool gameReady = false;
     bool playersTurn = true;
@@ -36,7 +40,7 @@ public class GameController : MonoBehaviour
 
     private void Start()
     {
-        Application.targetFrameRate = 60;
+        Application.targetFrameRate = 50;
 
         if (GameManager.single)
         {
@@ -110,14 +114,17 @@ public class GameController : MonoBehaviour
         displayPreview = true;
     }
 
-    IEnumerator BoardReset()
+    public void ResetBoard()
     {
-        yield return new WaitForSeconds(4);
+        StartCoroutine(ResetCoroutine());
+        canvasManager.ShowResetButton(false);
+    }
+
+    IEnumerator ResetCoroutine()
+    {
         baseCollider.SetActive(false);
         yield return new WaitForSeconds(2);
-
-        Scene scene = SceneManager.GetActiveScene();
-        SceneManager.LoadScene(scene.name);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     void Win(Player winner, Player looser, bool vsAI)
@@ -125,8 +132,15 @@ public class GameController : MonoBehaviour
         canvasManager.DisplayWinTitle(winner.name, looser.name);
         won = true;
         GameManager.Win(winner, looser);
+        canvasManager.ShowResetButton(true);
+    }
 
-        StartCoroutine("BoardReset");
+    void QuickEndGame()
+    {
+        canvasManager.DisplayWinText("Game ended!");
+        won = true;
+
+        canvasManager.ShowResetButton(true);
     }
 
     public void AddDisk(int collum)
