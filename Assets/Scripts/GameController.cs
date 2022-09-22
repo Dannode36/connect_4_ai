@@ -4,11 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using Debug = UnityEngine.Debug;
-using System.Reflection;
 
 public class GameController : MonoBehaviour
 {
@@ -40,6 +38,12 @@ public class GameController : MonoBehaviour
 
     private void Start()
     {
+        #if UNITY_EDITOR
+                Debug.unityLogger.logEnabled = true;
+        #else
+                Debug.unityLogger.logEnabled = false;
+        #endif
+
         //Application.targetFrameRate = 50;
 
         if (GameManager.single)
@@ -646,32 +650,5 @@ public class Board
             }
         }
         return false;
-    }
-
-    public void Print2DArray()
-    {
-        string printString = "";
-        for (int row = 0; row < array.GetLength(0); row++)
-        {
-            for (int collum = 0; collum < array.GetLength(1); collum++)
-            {
-                printString += $" {array[row, collum]},";
-            }
-            printString += Environment.NewLine;
-        }
-        Debug.Log(printString);
-    }
-    public void Print2DArray(int score)
-    {
-        string printString = "";
-        for (int row = 0; row < array.GetLength(0); row++)
-        {
-            for (int collum = 0; collum < array.GetLength(1); collum++)
-            {
-                printString += $" {array[row, collum]},";
-            }
-            printString += Environment.NewLine;
-        }
-        Debug.Log(printString + $" Score: {score}");
     }
 }
