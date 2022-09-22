@@ -35,11 +35,11 @@ public class MenuHandler : MonoBehaviour
 
     public void PreLoadGame(GameObject activeCanvas)
     {
+        SecondNameInput.interactable = !GameManager.single;
         previousMenu.Push(activeCanvas);
         activeCanvas.SetActive(false);
         GameOptionsCanvas.SetActive(true);
 
-        SecondNameInput.interactable = !GameManager.single;
     }
 
     public void EnterSettingsMenu(GameObject activeCanvas)
