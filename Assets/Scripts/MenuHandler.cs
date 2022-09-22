@@ -8,18 +8,12 @@ using UnityEngine.Rendering;
 public class MenuHandler : MonoBehaviour
 {
     public GameObject MenuCanvas;
-    public GameObject PreLoadCanvas;
+    public GameObject GameOptionsCanvas;
+    public GameObject SettingsCanvas;
     public TMP_InputField FirstNameInput;
     public TMP_InputField SecondNameInput;
 
-    public GameObject SettingsCanvas;
-
-    RenderPipelineAsset rpa;
-
-    private void Start()
-    {
-        rpa = GraphicsSettings.renderPipelineAsset;
-    }
+    Stack<GameObject> previousMenu = new Stack<GameObject>();
 
     public void SetGamemode(bool single)
     {
@@ -39,34 +33,25 @@ public class MenuHandler : MonoBehaviour
         SceneManager.LoadSceneAsync(0);
     }
 
-    public void PreLoadGame()
+    public void PreLoadGame(GameObject activeCanvas)
     {
-        MenuCanvas.SetActive(false);
-        PreLoadCanvas.SetActive(true);
+        previousMenu.Push(activeCanvas);
+        activeCanvas.SetActive(false);
+        GameOptionsCanvas.SetActive(true);
 
         SecondNameInput.interactable = !GameManager.single;
     }
 
-    public void OpenSettings()
+    public void EnterSettingsMenu(GameObject activeCanvas)
     {
-        MenuCanvas.SetActive(false);
+        previousMenu.Push(activeCanvas);
+        activeCanvas.SetActive(false);
         SettingsCanvas.SetActive(true);
     }
 
-    public void CloseSettings()
+    public void GoBackMenu(GameObject activeCanvas)
     {
-        MenuCanvas.SetActive(true);
-        SettingsCanvas.SetActive(false);
-    }
-
-    ////
-    
-    public void ChangeAntialisingMode(int val)
-    {
-        Debug.LogWarning("Num: " + val);
-    }
-    public void ChangeShadowQuality(int i)
-    {
-
+        activeCanvas.SetActive(false);
+        previousMenu.Pop().SetActive(true);
     }
 }

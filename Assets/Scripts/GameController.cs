@@ -36,7 +36,7 @@ public class GameController : MonoBehaviour
 
     private void Start()
     {
-        //Application.targetFrameRate = 60;
+        Application.targetFrameRate = 60;
 
         if (GameManager.single)
         {
@@ -334,7 +334,7 @@ public class Board
     public int ScoreBoard(Player currentPlayer)
     {
         int score = 0;
-        int printScore = 0;
+
         //Horizontal
         for (int j = 0; j < array.GetLength(1) - 3; j++)
         {
@@ -362,10 +362,6 @@ public class Board
 
                 int newScore = EvaluateScore(playerPiece, opPiece, empty);
                 score += newScore;
-                if (newScore > printScore)
-                {
-                    printScore = newScore;
-                }
             }
         }
 
@@ -396,10 +392,6 @@ public class Board
 
                 int newScore = EvaluateScore(playerPiece, opPiece, empty);
                 score += newScore;
-                if (newScore > printScore)
-                {
-                    printScore = newScore;
-                }
             }
         }
 
@@ -430,10 +422,6 @@ public class Board
 
                 int newScore = EvaluateScore(playerPiece, opPiece, empty);
                 score += newScore;
-                if (newScore > printScore)
-                {
-                    printScore = newScore;
-                }
             }
         }
 
@@ -464,12 +452,9 @@ public class Board
 
                 int newScore = EvaluateScore(playerPiece, opPiece, empty);
                 score += newScore;
-                if (newScore > printScore)
-                {
-                    printScore = newScore;
-                }
             }
         }
+
         return score;
     }
     public int ScoreBoard(Player currentPlayer, int[,] array)
@@ -619,7 +604,7 @@ public class Board
         int score = 0;
         if (playerPieces == 4)
         {
-            score += 100;
+            score += 1000;
         }
         else if (playerPieces == 3 && empty == 1)
         {
