@@ -40,7 +40,7 @@ public class GameController : MonoBehaviour
 
     private void Start()
     {
-        Application.targetFrameRate = 50;
+        //Application.targetFrameRate = 50;
 
         if (GameManager.single)
         {
