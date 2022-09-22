@@ -9,6 +9,8 @@ public class MenuAnimation : MonoBehaviour
     public GameObject yDisk;
     public GameObject rDisk;
 
+    public float density = 0.7f;
+
     void Start()
     {
         StartCoroutine(SpawnBoards());
@@ -24,7 +26,7 @@ public class MenuAnimation : MonoBehaviour
                 eulerAngles = new Vector3(Random.Range(-360, 360), -90, 90)
             };
             Instantiate(board, new Vector3(Random.Range(-100, 100), 100, 75), randRot);
-            yield return new WaitForSeconds(0.7f);
+            yield return new WaitForSeconds(density);
         }
     }
     IEnumerator SpawnDisks()
@@ -37,7 +39,7 @@ public class MenuAnimation : MonoBehaviour
             };
             Instantiate(yDisk, new Vector3(Random.Range(-100, 100), 100, 75), randRot);
 
-            yield return new WaitForSeconds(0.7f);
+            yield return new WaitForSeconds(density);
 
             randRot = new Quaternion
             {

@@ -5148,7 +5148,7 @@ Transform:
   m_GameObject: {fileID: 1565461984}
   m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 75}
-  m_LocalScale: {x: 40, y: 1, z: 40}
+  m_LocalScale: {x: 80, y: 1, z: 80}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 3
@@ -5850,10 +5850,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MenuCanvas: {fileID: 245242241}
-  SPOptionsCanvas: {fileID: 500257480}
+  GameOptionsCanvas: {fileID: 500257480}
+  SettingsCanvas: {fileID: 91109120}
   FirstNameInput: {fileID: 1999392980}
   SecondNameInput: {fileID: 1453832782}
-  SettingsCanvas: {fileID: 91109120}
 --- !u!114 &1782186151
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5902,6 +5902,7 @@ MonoBehaviour:
   board: {fileID: 7220714744476217766, guid: 65e549b9df3003042bd6b00c19c0a30b, type: 3}
   yDisk: {fileID: 6661327585790792702, guid: 6805cc9e89689f942b3406bdaefd5270, type: 3}
   rDisk: {fileID: 6661327585790792702, guid: 1d13fe865940c834bb9e0efa284ff294, type: 3}
+  density: 1.7
 --- !u!114 &1782186153
 MonoBehaviour:
   m_ObjectHideFlags: 0
