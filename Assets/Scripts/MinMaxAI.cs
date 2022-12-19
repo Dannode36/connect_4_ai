@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 public class MinMaxAI : Player
 {
+    public int branches;
     public MinMaxAI(int id, GameController game) : base (id, "AI")
     {
 
@@ -42,6 +43,7 @@ public class MinMaxAI : Player
                 Board boardCopy = new Board(board);
                 boardCopy.DropDisk(board.ai, col);
 
+                branches ++;
                 float eval = MinMax(boardCopy, depth - 1, alpha, beta, false).Item2;
                 if (eval > maxEval)
                 {
@@ -67,8 +69,8 @@ public class MinMaxAI : Player
                 Board boardCopy = new Board(board);
                 boardCopy.DropDisk(board.player1, col);
 
+                branches ++;
                 float eval = MinMax(boardCopy, depth - 1, alpha, beta, true).Item2;
-                //minEval = Mathf.Min(minEval, eval);
                 if (eval < minEval)
                 {
                     minEval = eval;

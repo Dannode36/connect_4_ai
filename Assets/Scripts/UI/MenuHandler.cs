@@ -52,6 +52,23 @@ public class MenuHandler : MonoBehaviour
     public void GoBackMenu(GameObject activeCanvas)
     {
         activeCanvas.SetActive(false);
-        previousMenu.Pop().SetActive(true);
+        if(previousMenu.Count == 0)
+        {
+            MenuCanvas.SetActive(true);
+        }
+        else
+        {
+            previousMenu.Pop().SetActive(true);
+        }
+    }
+
+    public void SetCyclicTurns(bool state)
+    {
+        GameManager.cyclicStartingTurns = state;
+    }
+
+    public void SetAIStarts(bool state)
+    {
+        GameManager.aiStarting = state;
     }
 }

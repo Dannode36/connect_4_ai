@@ -22,7 +22,13 @@ public class CanvasManger : MonoBehaviour
     };
 
     public TMP_Text WinTitle;
+    public TMP_Text TurnInfo;
     public GameObject ResetButton;
+
+    public void DisplayTurnInfo(string text)
+    {
+        TurnInfo.text = text;
+    }
 
     public void DisplayWinTitle(string winnerName, string looserName)
     {

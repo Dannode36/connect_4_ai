@@ -32,7 +32,7 @@ public class GameController : MonoBehaviour
     public GameObject RedDisk;
 
     public GameObject GameCanvas;
-    CanvasManger canvasManager;
+    public CanvasManger canvasManager;
 
     public Image dropPreview;
 
@@ -48,13 +48,13 @@ public class GameController : MonoBehaviour
 
         if (GameManager.single)
         {
-            LoadSingleplayer();
+            LoadSingleplayer(GameManager.aiStarting);
         }
         else
         {
             LoadCoop();
         }
-        canvasManager = GameCanvas.GetComponent<CanvasManger>();
+        //canvasManager = GameCanvas.GetComponent<CanvasManger>();
 
         GameManager.NewGame();
 
@@ -83,13 +83,26 @@ public class GameController : MonoBehaviour
         }
     }
 
-    void LoadSingleplayer()
+    void LoadSingleplayer(bool aiStarting)
     {
         vsAI = true;
         board = new Board(6, 7, new Player(1, GameManager.PlayerOneName), new MinMaxAI(2, this));
-        currentPlayer = board.player1;
-        previousPlayer = board.ai;
-        gameReady = true;
+        if (aiStarting)
+        {
+            canvasManager.DisplayTurnInfo("AI's Turn");
+            displayPreview = false;
+            currentPlayer = board.ai;
+            previousPlayer = board.player1;
+            AIMove();
+        }
+        else
+        {
+            canvasManager.DisplayTurnInfo("Your Turn");
+            gameReady = true;
+            displayPreview = true;
+            currentPlayer = board.player1;
+            previousPlayer = board.ai;
+        }
     }
 
     void LoadCoop()
@@ -100,26 +113,12 @@ public class GameController : MonoBehaviour
         gameReady = true;
     }
 
-    IEnumerator AITurn(int aiCollum)
-    {
-        playersTurn = false;
-        yield return new WaitForSeconds(1);
-        print("Minmax output: " + aiCollum);
-        DropDiskAsync(board.ai , aiCollum);
-        Print2DArray(board.array);
-        StartCoroutine(TurnDelay());
-    }
-
-    IEnumerator TurnDelay()
-    {
-        yield return new WaitForSeconds(1);
-        playersTurn = true;
-        gameReady = true;
-        displayPreview = true;
-    }
-
     public void ResetBoard()
     {
+        if (GameManager.cyclicStartingTurns)
+        {
+            GameManager.aiStarting = !GameManager.aiStarting;
+        }
         StartCoroutine(ResetCoroutine());
         canvasManager.ShowResetButton(false);
     }
@@ -182,24 +181,52 @@ public class GameController : MonoBehaviour
 
             if (playersTurn && vsAI)
             {
-                aiThinking = true;
-
-                Stopwatch stopWatch = new Stopwatch();
-                stopWatch.Start();
-
-                int aiMove = await Task.Run(() => board.ai.MinMax(board, 7, -Mathf.Infinity, Mathf.Infinity, true).Item1);
-
-                stopWatch.Stop();
-                Debug.Log($"AI spent {stopWatch.ElapsedMilliseconds} milliseconds thinking.");
-
-                StartCoroutine(AITurn(aiMove));
-                aiThinking = false;
+                await AIMove();
             }
             else
             {
                 StartCoroutine(TurnDelay());
             }
         }
+    }
+
+    private async Task AIMove()
+    {
+        playersTurn = false;
+        canvasManager.DisplayTurnInfo("AI's Turn");
+
+        aiThinking = true;
+
+        Stopwatch stopWatch = new Stopwatch();
+        stopWatch.Start();
+
+        int aiMove = await Task.Run(() => board.ai.MinMax(board, 7, -Mathf.Infinity, Mathf.Infinity, true).Item1);
+
+        stopWatch.Stop();
+        Debug.Log($"AI spent {stopWatch.ElapsedMilliseconds} milliseconds thinking.");
+
+        StartCoroutine(AITurn(aiMove));
+        aiThinking = false;
+    }
+
+    IEnumerator AITurn(int aiCollum)
+    {
+        yield return new WaitForSeconds(1);
+        print("Minmax output: " + aiCollum);
+        DropDiskAsync(board.ai , aiCollum);
+        Debug.Log(board.ai.branches);
+        board.ai.branches = 0;
+        Print2DArray(board.array);
+        StartCoroutine(TurnDelay());
+    }
+
+    IEnumerator TurnDelay()
+    {
+        canvasManager.DisplayTurnInfo("Your Turn");
+        yield return new WaitForSeconds(1);
+        playersTurn = true;
+        gameReady = true;
+        displayPreview = true;
     }
 
     void Print2DArray(int[,] array)
@@ -475,147 +502,6 @@ public class Board
 
         return score;
     }
-    public int ScoreBoard(Player currentPlayer, int[,] array)
-    {
-        int score = 0;
-        int printScore = 0;
-        //Horizontal
-        for (int j = 0; j < array.GetLength(1) - 3; j++)
-        {
-            for (int i = 0; i < array.GetLength(0); i++)
-            {
-                int playerPiece = 0;
-                int opPiece = 0;
-                int empty = 0;
-
-                for (int x = 0; x < 4; x++)
-                {
-                    if (array[i, j + x] == currentPlayer.id)
-                    {
-                        playerPiece++;
-                    }
-                    else if (array[i, j + x] == (currentPlayer.id == 1 ? 2 : 1))
-                    {
-                        opPiece++;
-                    }
-                    else
-                    {
-                        empty++;
-                    }
-                }
-
-                int newScore = EvaluateScore(playerPiece, opPiece, empty);
-                score += newScore;
-                if (newScore > printScore)
-                {
-                    printScore = newScore;
-                }
-            }
-        }
-
-        //Vertical
-        for (int j = 0; j < array.GetLength(1); j++)
-        {
-            for (int i = 0; i < array.GetLength(0) - 3; i++)
-            {
-                int playerPiece = 0;
-                int opPiece = 0;
-                int empty = 0;
-
-                for (int x = 0; x < 4; x++)
-                {
-                    if (array[i + x, j] == currentPlayer.id)
-                    {
-                        playerPiece++;
-                    }
-                    else if (array[i + x, j] == (currentPlayer.id == 1 ? 2 : 1))
-                    {
-                        opPiece++;
-                    }
-                    else
-                    {
-                        empty++;
-                    }
-                }
-
-                int newScore = EvaluateScore(playerPiece, opPiece, empty);
-                score += newScore;
-                if (newScore > printScore)
-                {
-                    printScore = newScore;
-                }
-            }
-        }
-
-        //Ascending Diagonal 
-        for (int j = 0; j < array.GetLength(1) - 3; j++)
-        {
-            for (int i = 3; i < array.GetLength(0); i++)
-            {
-                int playerPiece = 0;
-                int opPiece = 0;
-                int empty = 0;
-
-                for (int x = 0; x < 4; x++)
-                {
-                    if (array[i - x, j + x] == currentPlayer.id)
-                    {
-                        playerPiece++;
-                    }
-                    else if (array[i - x, j + x] == (currentPlayer.id == 1 ? 2 : 1))
-                    {
-                        opPiece++;
-                    }
-                    else
-                    {
-                        empty++;
-                    }
-                }
-
-                int newScore = EvaluateScore(playerPiece, opPiece, empty);
-                score += newScore;
-                if (newScore > printScore)
-                {
-                    printScore = newScore;
-                }
-            }
-        }
-
-        //Descending Diagonal
-        for (int j = 3; j < array.GetLength(1); j++)
-        {
-            for (int i = 3; i < array.GetLength(0); i++)
-            {
-                int playerPiece = 0;
-                int opPiece = 0;
-                int empty = 0;
-
-                for (int x = 0; x < 4; x++)
-                {
-                    if (array[i - x, j - x] == currentPlayer.id)
-                    {
-                        playerPiece++;
-                    }
-                    else if (array[i - x, j - x] == (currentPlayer.id == 1 ? 2 : 1))
-                    {
-                        opPiece++;
-                    }
-                    else
-                    {
-                        empty++;
-                    }
-                }
-
-                int newScore = EvaluateScore(playerPiece, opPiece, empty);
-                score += newScore;
-                if (newScore > printScore)
-                {
-                    printScore = newScore;
-                }
-            }
-        }
-        return score;
-    }
 
     public int EvaluateScore(int playerPieces, int opPieces, int empty)
     {
@@ -626,7 +512,7 @@ public class Board
         }
         else if (playerPieces == 3 && empty == 1)
         {
-            score += 5;
+            score += 10;
         }
         else if (playerPieces == 2 && empty == 2)
         {
@@ -634,7 +520,7 @@ public class Board
         }
         else if (opPieces == 3 && empty == 1)
         {
-            score -= 4;
+            score -= 40;
         }
         return score;
     }

@@ -9,6 +9,8 @@ public static class GameManager
     static Dictionary<Player, List<Tuple<Player, Player>>> matchHistory = new Dictionary<Player, List<Tuple<Player, Player>>>();
 
     static public bool single = true;
+    static public bool aiStarting = false;
+    static public bool cyclicStartingTurns = false;
     static public string PlayerOneName = "Player 1";
     static public string PlayerTwoName = "Player 2";
 
