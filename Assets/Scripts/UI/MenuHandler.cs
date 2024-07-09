@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
 using UnityEngine.Rendering;
+using System;
 
 public class MenuHandler : MonoBehaviour
 {
@@ -13,17 +14,21 @@ public class MenuHandler : MonoBehaviour
     public TMP_InputField FirstNameInput;
     public TMP_InputField SecondNameInput;
 
-    Stack<GameObject> previousMenu = new Stack<GameObject>();
+    Stack<GameObject> menuStack = new();
 
-    public void SetGamemode(bool single)
+    public void SetGamemode(bool vsAi)
     {
-        GameManager.single = single;
+        GameManager.gamemode = vsAi ? Gamemode.VsAI : Gamemode.COOP;
     }
 
-    public void LoadMainScene()
+    public void SetAIStarts(bool state)
+    {
+        GameManager.aiFirst = state;
+    }
+
+    public void StartGame()
     {
         SceneManager.LoadSceneAsync(1);
-        print(FirstNameInput.text);
         GameManager.PlayerOneName = FirstNameInput.text;
         GameManager.PlayerTwoName = SecondNameInput.text;
     }
@@ -35,16 +40,15 @@ public class MenuHandler : MonoBehaviour
 
     public void PreLoadGame(GameObject activeCanvas)
     {
-        SecondNameInput.interactable = !GameManager.single;
-        previousMenu.Push(activeCanvas);
+        SecondNameInput.interactable = !(GameManager.gamemode == Gamemode.VsAI);
+        menuStack.Push(activeCanvas);
         activeCanvas.SetActive(false);
         GameOptionsCanvas.SetActive(true);
-
     }
 
     public void EnterSettingsMenu(GameObject activeCanvas)
     {
-        previousMenu.Push(activeCanvas);
+        menuStack.Push(activeCanvas);
         activeCanvas.SetActive(false);
         SettingsCanvas.SetActive(true);
     }
@@ -52,23 +56,13 @@ public class MenuHandler : MonoBehaviour
     public void GoBackMenu(GameObject activeCanvas)
     {
         activeCanvas.SetActive(false);
-        if(previousMenu.Count == 0)
+        if(menuStack.Count == 0)
         {
             MenuCanvas.SetActive(true);
         }
         else
         {
-            previousMenu.Pop().SetActive(true);
+            menuStack.Pop().SetActive(true);
         }
-    }
-
-    public void SetCyclicTurns(bool state)
-    {
-        GameManager.cyclicStartingTurns = state;
-    }
-
-    public void SetAIStarts(bool state)
-    {
-        GameManager.aiStarting = state;
     }
 }

@@ -4,13 +4,19 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+public enum Gamemode
+{
+    VsAI,
+    COOP,
+}
+
 public static class GameManager
 {
-    static Dictionary<Player, List<Tuple<Player, Player>>> matchHistory = new Dictionary<Player, List<Tuple<Player, Player>>>();
+    static Dictionary<Player, List<Tuple<Player, Player>>> matchHistory = new();
 
-    static public bool single = true;
-    static public bool aiStarting = false;
-    static public bool cyclicStartingTurns = false;
+    static public Gamemode gamemode;
+    static public bool aiFirst;
+    static public bool swapStarting;
     static public string PlayerOneName = "Player 1";
     static public string PlayerTwoName = "Player 2";
 
@@ -42,8 +48,14 @@ public static class GameManager
         }
     }
 
-    public static void NewGame()
+    public static void NewGame(bool vsAi, bool aiFirst)
     {
-        matchHistory = new Dictionary<Player, List<Tuple<Player, Player>>>();
+        if(vsAi)
+        {
+            if (aiFirst)
+            {
+
+            }
+        }
     }
 }

@@ -7,27 +7,27 @@ using System.Threading.Tasks;
 public class MinMaxAI : Player
 {
     public int branches;
-    public MinMaxAI(int id, GameController game) : base (id, "AI")
+    public MinMaxAI(int id) : base (id, "AI")
     {
 
     }
 
-    public Tuple<int, float> MinMax(Board board, int depth, float alpha, float beta, bool maximizing)
+    public Tuple<int, float> MinMax(Board board, Player opposition, int depth, float alpha, float beta, bool maximizing)
     {
         var validLocations = board.ValidCollums();
-        if (depth == 0 || board.CheckForFull() || board.CheckForWin(board.ai) || board.CheckForWin(board.player1))
+        if (depth == 0 || board.CheckForFull() || board.CheckForWin(this) || board.CheckForWin(opposition))
         {
-            if (board.CheckForWin(board.ai))
+            if (board.CheckForWin(this))
             {
                 return new Tuple<int, float>(0, 1000000000);
             }
-            else if (board.CheckForWin(board.player1))
+            else if (board.CheckForWin(opposition))
             {
                 return new Tuple<int, float>(0, -1000000000);
             }
             if (depth == 0)
             {
-                int score = board.ScoreBoard(board.ai);
+                int score = board.ScoreBoard(this);
                 return new Tuple<int, float>(0, score);
             }
             return new Tuple<int, float>(0, 0);
@@ -40,11 +40,11 @@ public class MinMaxAI : Player
 
             foreach (int col in validLocations)
             {
-                Board boardCopy = new Board(board);
-                boardCopy.DropDisk(board.ai, col);
+                Board boardCopy = new(board);
+                boardCopy.DropDisk(this, col);
 
                 branches ++;
-                float eval = MinMax(boardCopy, depth - 1, alpha, beta, false).Item2;
+                float eval = MinMax(boardCopy, opposition, depth - 1, alpha, beta, false).Item2;
                 if (eval > maxEval)
                 {
                     maxEval = eval;
@@ -66,11 +66,11 @@ public class MinMaxAI : Player
 
             foreach (int col in validLocations)
             {
-                Board boardCopy = new Board(board);
-                boardCopy.DropDisk(board.player1, col);
+                Board boardCopy = new(board);
+                boardCopy.DropDisk(opposition, col);
 
                 branches ++;
-                float eval = MinMax(boardCopy, depth - 1, alpha, beta, true).Item2;
+                float eval = MinMax(boardCopy, opposition, depth - 1, alpha, beta, true).Item2;
                 if (eval < minEval)
                 {
                     minEval = eval;

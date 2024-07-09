@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -13,18 +12,17 @@ public class GameController : MonoBehaviour
     [InspectorButton("QuickEndGame")]
     public bool EndGame;
 
-    bool won = false;
-    bool gameReady = false;
-    bool playersTurn = true;
-    bool displayPreview = true;
+    private Gamemode gamemode;
+    static public bool aiFirst;
+    static public bool swapStarting;
+    private Board board;
 
-    public bool aiThinking = false;
-    bool vsAI = false;
+    bool won;
+    bool waiting;
+    bool displayDiskPreview;
 
-    Board board;
-
-    public Player currentPlayer;
-    Player previousPlayer;
+    public Player currentPlayer { get; private set; }
+    public Player previousPlayer { get; private set; }
 
     public GameObject baseCollider;
     public Transform[] spawnLocations;
@@ -38,86 +36,60 @@ public class GameController : MonoBehaviour
 
     private void Start()
     {
-        #if UNITY_EDITOR
-                Debug.unityLogger.logEnabled = true;
-        #else
-                Debug.unityLogger.logEnabled = false;
-        #endif
+        gamemode = GameManager.gamemode;
+        aiFirst = GameManager.aiFirst;
+        swapStarting = GameManager.swapStarting;
 
-        //Application.targetFrameRate = 50;
+        board = new Board(6, 7);
 
-        if (GameManager.single)
+        if (gamemode == Gamemode.VsAI)
         {
-            LoadSingleplayer(GameManager.aiStarting);
+            if (aiFirst)
+            {
+                currentPlayer = new MinMaxAI(1);
+                previousPlayer = new Player(2, GameManager.PlayerOneName);
+                canvasManager.DisplayTurnInfo("AI's turn");
+            }
+            else
+            {
+                currentPlayer = new Player(2, GameManager.PlayerOneName);
+                previousPlayer = new MinMaxAI(1);
+                canvasManager.DisplayTurnInfo(currentPlayer.name + "'s turn");
+            }
         }
         else
         {
-            LoadCoop();
+            currentPlayer = new Player(1, GameManager.PlayerOneName);
+            currentPlayer = new Player(1, GameManager.PlayerTwoName);
         }
-        //canvasManager = GameCanvas.GetComponent<CanvasManger>();
-
-        GameManager.NewGame();
-
-        print(GameManager.PlayerOneName);
     }
 
-    Color clear = new Color(0, 0, 0, 0);
     void Update()
     {
         if (!won)
         {
             float screenPercent = Input.mousePosition.x / Screen.width * 100;
-            if (displayPreview && screenPercent > 25 && screenPercent < 75)
+            if (displayDiskPreview && screenPercent > 25 && screenPercent < 75)
             {
                 dropPreview.transform.position = new Vector3(Input.mousePosition.x, dropPreview.transform.position.y, dropPreview.transform.position.z);
                 dropPreview.color = currentPlayer.id == 1 ? new Color(1, 0, 0, 0.4f) : new Color(1, 1, 0, 0.4f);
             }
             else
             {
-                dropPreview.color = clear;
+                dropPreview.color = Color.clear;
             }
         }
         else
         {
-            dropPreview.color = clear;
+            dropPreview.color = Color.clear;
         }
-    }
-
-    void LoadSingleplayer(bool aiStarting)
-    {
-        vsAI = true;
-        board = new Board(6, 7, new Player(1, GameManager.PlayerOneName), new MinMaxAI(2, this));
-        if (aiStarting)
-        {
-            canvasManager.DisplayTurnInfo("AI's Turn");
-            displayPreview = false;
-            currentPlayer = board.ai;
-            previousPlayer = board.player1;
-            AIMove();
-        }
-        else
-        {
-            canvasManager.DisplayTurnInfo("Your Turn");
-            gameReady = true;
-            displayPreview = true;
-            currentPlayer = board.player1;
-            previousPlayer = board.ai;
-        }
-    }
-
-    void LoadCoop()
-    {
-        board = new Board(6, 7, new Player(1, GameManager.PlayerOneName), new Player(2, GameManager.PlayerTwoName));
-        currentPlayer = board.player1;
-        previousPlayer = board.player2;
-        gameReady = true;
     }
 
     public void ResetBoard()
     {
-        if (GameManager.cyclicStartingTurns)
+        if (swapStarting)
         {
-            GameManager.aiStarting = !GameManager.aiStarting;
+            aiFirst = !aiFirst;
         }
         StartCoroutine(ResetCoroutine());
         canvasManager.ShowResetButton(false);
@@ -130,56 +102,46 @@ public class GameController : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
-    void Win(Player winner, Player looser, bool vsAI)
+    void Win(Player winner, Player looser)
     {
-        canvasManager.DisplayWinTitle(winner.name, looser.name);
         won = true;
         GameManager.Win(winner, looser);
+        canvasManager.DisplayWinTitle(winner.name, looser.name);
         canvasManager.ShowResetButton(true);
     }
 
     void QuickEndGame()
     {
-        canvasManager.DisplayWinText("Game ended!");
         won = true;
-
+        canvasManager.DisplayWinText("Game ended!");
         canvasManager.ShowResetButton(true);
     }
 
-    public void AddDisk(int collum)
+    public void AddDiskButton(int collum)
     {
-        if (!gameReady || won || !board.IsValidLocation( collum)) { return; }
+        if (waiting || won || !board.IsValidLocation( collum)) { return; }
 
-        gameReady = false;
-        DropDiskAsync(currentPlayer, collum);
+        waiting = true;
+        displayDiskPreview = false;
+        DropDisk(currentPlayer, collum);
     }
 
-    private async Task DropDiskAsync(Player player, int collum)
+    private async Task DropDisk(Player player, int collum)
     {
-        displayPreview = false;
-
         if (board.DropDisk(player, collum))
         {
             Instantiate(player.id == 1 ? RedDisk : BlueDisk, spawnLocations[collum].transform.position, spawnLocations[collum].transform.rotation);
 
             if (board.CheckForWin(player))
             {
-                Win(player, previousPlayer, vsAI);
+                Win(player, previousPlayer);
                 return;
             }
 
+            currentPlayer = previousPlayer;
             previousPlayer = player;
 
-            if (!vsAI)
-            {
-                currentPlayer = player == board.player1 ? board.player2 : board.player1;
-            }
-            else
-            {
-                currentPlayer = player == board.player1 ? board.ai : board.player1;
-            }
-
-            if (playersTurn && vsAI)
+            if (currentPlayer is MinMaxAI)
             {
                 await AIMove();
             }
@@ -192,41 +154,35 @@ public class GameController : MonoBehaviour
 
     private async Task AIMove()
     {
-        playersTurn = false;
         canvasManager.DisplayTurnInfo("AI's Turn");
 
-        aiThinking = true;
-
-        Stopwatch stopWatch = new Stopwatch();
+        Stopwatch stopWatch = new();
         stopWatch.Start();
 
-        int aiMove = await Task.Run(() => board.ai.MinMax(board, 7, -Mathf.Infinity, Mathf.Infinity, true).Item1);
+        int aiMove = await Task.Run(() => (currentPlayer as MinMaxAI).MinMax(board, previousPlayer, 7, -Mathf.Infinity, Mathf.Infinity, true).Item1);
+        print("Minmax output: " + aiMove);
+        Debug.Log((currentPlayer as MinMaxAI).branches);
+        (currentPlayer as MinMaxAI).branches = 0;
 
         stopWatch.Stop();
         Debug.Log($"AI spent {stopWatch.ElapsedMilliseconds} milliseconds thinking.");
 
         StartCoroutine(AITurn(aiMove));
-        aiThinking = false;
     }
 
     IEnumerator AITurn(int aiCollum)
     {
         yield return new WaitForSeconds(1);
-        print("Minmax output: " + aiCollum);
-        DropDiskAsync(board.ai , aiCollum);
-        Debug.Log(board.ai.branches);
-        board.ai.branches = 0;
+        DropDisk(currentPlayer, aiCollum);
         Print2DArray(board.array);
         StartCoroutine(TurnDelay());
     }
 
     IEnumerator TurnDelay()
     {
-        canvasManager.DisplayTurnInfo("Your Turn");
+        canvasManager.DisplayTurnInfo(currentPlayer.name + "'s Turn");
+        waiting = false;
         yield return new WaitForSeconds(1);
-        playersTurn = true;
-        gameReady = true;
-        displayPreview = true;
     }
 
     void Print2DArray(int[,] array)
@@ -241,300 +197,5 @@ public class GameController : MonoBehaviour
             printString += Environment.NewLine;
         }
         print(printString);
-    }
-}
-
-public class Board
-{
-    public readonly int[,] array;
-
-    public readonly Player player1;
-    public readonly Player player2;
-    public readonly MinMaxAI ai;
-
-    public Board(int rows, int collums, Player player1, Player player2)
-    {
-        array = new int[rows, collums];
-        this.player1 = player1;
-        this.player2 = player2;
-    }
-    public Board(int rows, int collums, Player player1, MinMaxAI ai)
-    {
-        array = new int[rows, collums];
-        this.player1 = player1;
-        this.ai = ai;
-    }
-    public Board(Board boardToCopy)
-    {
-        array = (int[,])boardToCopy.array.Clone();
-        player1 = boardToCopy.player1;
-        player1 = boardToCopy.player1;
-        ai = boardToCopy.ai;
-    }
-
-    public bool IsValidLocation(int collum)
-    {
-        for (int i = array.GetLength(0) - 1; i > -1; i--)
-        {
-            if (array[i, collum] == 0)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public List<int> ValidCollums()
-    {
-        List<int> validCollums = new List<int>();
-
-        for (int i = 0; i < array.GetLength(1); i++)
-        {
-            if (IsValidLocation(i))
-            {
-                validCollums.Add(i);
-            }
-        }
-        return validCollums;
-    }
-
-    public int NextFreeRow(int collum)
-    {
-        for (int i = array.GetLength(0) - 1; i > -1; i--)
-        {
-            if (array[i, collum] == 0)
-            {
-                return i;
-            }
-        }
-        return 0;
-    }
-
-    public bool CheckForWin(Player currentPlayer)
-    {
-        int player = currentPlayer.id;
-
-        // horizontalCheck 
-        for (int j = 0; j < array.GetLength(1) - 3; j++)
-        {
-            for (int i = 0; i < array.GetLength(0); i++)
-            {
-                if (array[i, j] == player && array[i, j + 1] == player && array[i, j + 2] == player && array[i, j + 3] == player)
-                {
-                    return true;
-                }
-            }
-        }
-
-        // verticalCheck
-        for (int j = 0; j < array.GetLength(1); j++)
-        {
-            for (int i = 0; i < array.GetLength(0) - 3; i++)
-            {
-                if (array[i, j] == player && array[i + 1, j] == player && array[i + 2, j] == player && array[i + 3, j] == player)
-                {
-                    return true;
-                }
-            }
-        }
-
-        // ascendingDiagonalCheck 
-        for (int j = 0; j < array.GetLength(1) - 3; j++)
-        {
-            for (int i = 3; i < array.GetLength(0); i++)
-            {
-                if (array[i, j] == player && array[i - 1, j + 1] == player && array[i - 2, j + 2] == player && array[i - 3, j + 3] == player)
-                {
-                    return true;
-                }
-            }
-        }
-
-        // descendingDiagonalCheck
-        for (int j = 3; j < array.GetLength(1); j++)
-        {
-            for (int i = 3; i < array.GetLength(0); i++)
-            {
-                if (array[i, j] == player && array[i - 1, j - 1] == player && array[i - 2, j - 2] == player && array[i - 3, j - 3] == player)
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public bool CheckForFull()
-    {
-        foreach (int i in array)
-        {
-            if (i == 0)
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public int ScoreBoard(Player currentPlayer)
-    {
-        int score = 0;
-
-        //Horizontal
-        for (int j = 0; j < array.GetLength(1) - 3; j++)
-        {
-            for (int i = 0; i < array.GetLength(0); i++)
-            {
-                int playerPiece = 0;
-                int opPiece = 0;
-                int empty = 0;
-
-                for (int x = 0; x < 4; x++)
-                {
-                    if (array[i, j + x] == currentPlayer.id)
-                    {
-                        playerPiece++;
-                    }
-                    else if (array[i, j + x] == (currentPlayer.id == 1 ? 2 : 1))
-                    {
-                        opPiece++;
-                    }
-                    else
-                    {
-                        empty++;
-                    }
-                }
-
-                int newScore = EvaluateScore(playerPiece, opPiece, empty);
-                score += newScore;
-            }
-        }
-
-        //Vertical
-        for (int j = 0; j < array.GetLength(1); j++)
-        {
-            for (int i = 0; i < array.GetLength(0) - 3; i++)
-            {
-                int playerPiece = 0;
-                int opPiece = 0;
-                int empty = 0;
-
-                for (int x = 0; x < 4; x++)
-                {
-                    if (array[i + x, j] == currentPlayer.id)
-                    {
-                        playerPiece++;
-                    }
-                    else if (array[i + x, j] == (currentPlayer.id == 1 ? 2 : 1))
-                    {
-                        opPiece++;
-                    }
-                    else
-                    {
-                        empty++;
-                    }
-                }
-
-                int newScore = EvaluateScore(playerPiece, opPiece, empty);
-                score += newScore;
-            }
-        }
-
-        //Ascending Diagonal 
-        for (int j = 0; j < array.GetLength(1) - 3; j++)
-        {
-            for (int i = 3; i < array.GetLength(0); i++)
-            {
-                int playerPiece = 0;
-                int opPiece = 0;
-                int empty = 0;
-
-                for (int x = 0; x < 4; x++)
-                {
-                    if (array[i - x, j + x] == currentPlayer.id)
-                    {
-                        playerPiece++;
-                    }
-                    else if (array[i - x, j + x] == (currentPlayer.id == 1 ? 2 : 1))
-                    {
-                        opPiece++;
-                    }
-                    else
-                    {
-                        empty++;
-                    }
-                }
-
-                int newScore = EvaluateScore(playerPiece, opPiece, empty);
-                score += newScore;
-            }
-        }
-
-        //Descending Diagonal
-        for (int j = 3; j < array.GetLength(1); j++)
-        {
-            for (int i = 3; i < array.GetLength(0); i++)
-            {
-                int playerPiece = 0;
-                int opPiece = 0;
-                int empty = 0;
-
-                for (int x = 0; x < 4; x++)
-                {
-                    if (array[i - x, j - x] == currentPlayer.id)
-                    {
-                        playerPiece++;
-                    }
-                    else if (array[i - x, j - x] == (currentPlayer.id == 1 ? 2 : 1))
-                    {
-                        opPiece++;
-                    }
-                    else
-                    {
-                        empty++;
-                    }
-                }
-
-                int newScore = EvaluateScore(playerPiece, opPiece, empty);
-                score += newScore;
-            }
-        }
-
-        return score;
-    }
-
-    public int EvaluateScore(int playerPieces, int opPieces, int empty)
-    {
-        int score = 0;
-        if (playerPieces == 4)
-        {
-            score += 1000;
-        }
-        else if (playerPieces == 3 && empty == 1)
-        {
-            score += 10;
-        }
-        else if (playerPieces == 2 && empty == 2)
-        {
-            score += 2;
-        }
-        else if (opPieces == 3 && empty == 1)
-        {
-            score -= 40;
-        }
-        return score;
-    }
-
-    public bool DropDisk(Player player, int collum)
-    {
-        for (int i = array.GetLength(0) - 1; i > -1; i--)
-        {
-            if (array[i, collum] == 0)
-            {
-                array[i, collum] = player.id;
-                return true;
-            }
-        }
-        return false;
     }
 }

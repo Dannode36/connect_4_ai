@@ -4,11 +4,12 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Collections.ObjectModel;
 
 public class CanvasManger : MonoBehaviour
 {
-    List<string> winMessages = new List<string> 
-    { 
+    ReadOnlyCollection<string> winMessages = new(new List<string>()
+    {
         "won against", 
         "destroyed", 
         "demolished", 
@@ -19,7 +20,7 @@ public class CanvasManger : MonoBehaviour
         "was better than",
         "owned",
         "beat"
-    };
+    });
 
     public TMP_Text WinTitle;
     public TMP_Text TurnInfo;
