@@ -19,7 +19,6 @@ public class GameController : MonoBehaviour
 
     bool won;
     bool waiting;
-    bool displayDiskPreview;
 
     public Player currentPlayer { get; private set; }
     public Player previousPlayer { get; private set; }
@@ -42,26 +41,29 @@ public class GameController : MonoBehaviour
 
         board = new Board(6, 7);
 
-        if (gamemode == Gamemode.VsAI)
+        switch (gamemode)
         {
-            if (aiFirst)
-            {
-                currentPlayer = new MinMaxAI(1);
-                previousPlayer = new Player(2, GameManager.PlayerOneName);
-                canvasManager.DisplayTurnInfo("AI's turn");
-            }
-            else
-            {
-                currentPlayer = new Player(2, GameManager.PlayerOneName);
-                previousPlayer = new MinMaxAI(1);
-                canvasManager.DisplayTurnInfo(currentPlayer.name + "'s turn");
-            }
+            case Gamemode.VsAI:
+                if (aiFirst)
+                {
+                    currentPlayer = new MinMaxAI(1);
+                    previousPlayer = new Player(2, GameManager.PlayerOneName);
+                    waiting = true;
+                    _ = AIMove();
+                }
+                else
+                {
+                    currentPlayer = new Player(1, GameManager.PlayerOneName);
+                    previousPlayer = new MinMaxAI(2);
+                }
+                break;
+            default:
+                currentPlayer = new Player(1, GameManager.PlayerOneName);
+                previousPlayer = new Player(2, GameManager.PlayerTwoName);
+                break;
         }
-        else
-        {
-            currentPlayer = new Player(1, GameManager.PlayerOneName);
-            currentPlayer = new Player(1, GameManager.PlayerTwoName);
-        }
+
+        canvasManager.DisplayTurnInfo(currentPlayer.name + "'s turn");
     }
 
     void Update()
@@ -69,20 +71,14 @@ public class GameController : MonoBehaviour
         if (!won)
         {
             float screenPercent = Input.mousePosition.x / Screen.width * 100;
-            if (displayDiskPreview && screenPercent > 25 && screenPercent < 75)
+            if (!waiting && screenPercent > 25 && screenPercent < 75)
             {
                 dropPreview.transform.position = new Vector3(Input.mousePosition.x, dropPreview.transform.position.y, dropPreview.transform.position.z);
                 dropPreview.color = currentPlayer.id == 1 ? new Color(1, 0, 0, 0.4f) : new Color(1, 1, 0, 0.4f);
-            }
-            else
-            {
-                dropPreview.color = Color.clear;
+                return;
             }
         }
-        else
-        {
-            dropPreview.color = Color.clear;
-        }
+        dropPreview.color = Color.clear;
     }
 
     public void ResetBoard()
@@ -110,6 +106,14 @@ public class GameController : MonoBehaviour
         canvasManager.ShowResetButton(true);
     }
 
+    void Tie(Player playerOne, Player playerTwo)
+    {
+        won = true;
+        GameManager.Tie(playerOne, playerTwo);
+        canvasManager.DisplayWinText("Tie");
+        canvasManager.ShowResetButton(true);
+    }
+
     void QuickEndGame()
     {
         won = true;
@@ -122,8 +126,7 @@ public class GameController : MonoBehaviour
         if (waiting || won || !board.IsValidLocation( collum)) { return; }
 
         waiting = true;
-        displayDiskPreview = false;
-        DropDisk(currentPlayer, collum);
+        _ = DropDisk(currentPlayer, collum);
     }
 
     private async Task DropDisk(Player player, int collum)
@@ -135,6 +138,12 @@ public class GameController : MonoBehaviour
             if (board.CheckForWin(player))
             {
                 Win(player, previousPlayer);
+                return;
+            }
+            else if (board.CheckForFull())
+            {
+                Tie(previousPlayer, currentPlayer); //board should always fill up on the second player
+                Debug.Log("First player is " + previousPlayer.name);
                 return;
             }
 
@@ -160,7 +169,7 @@ public class GameController : MonoBehaviour
         stopWatch.Start();
 
         int aiMove = await Task.Run(() => (currentPlayer as MinMaxAI).MinMax(board, previousPlayer, 7, -Mathf.Infinity, Mathf.Infinity, true).Item1);
-        print("Minmax output: " + aiMove);
+        Debug.Log("Minmax output: " + aiMove);
         Debug.Log((currentPlayer as MinMaxAI).branches);
         (currentPlayer as MinMaxAI).branches = 0;
 
@@ -172,10 +181,10 @@ public class GameController : MonoBehaviour
 
     IEnumerator AITurn(int aiCollum)
     {
-        yield return new WaitForSeconds(1);
-        DropDisk(currentPlayer, aiCollum);
+        yield return new WaitForSeconds(0.5f);
+        _ = DropDisk(currentPlayer, aiCollum);
         Print2DArray(board.array);
-        StartCoroutine(TurnDelay());
+        //StartCoroutine(TurnDelay());
     }
 
     IEnumerator TurnDelay()

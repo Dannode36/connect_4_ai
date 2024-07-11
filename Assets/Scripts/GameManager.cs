@@ -12,7 +12,7 @@ public enum Gamemode
 
 public static class GameManager
 {
-    static Dictionary<Player, List<Tuple<Player, Player>>> matchHistory = new();
+    static Dictionary<Player, List<Match>> matchHistory = new();
 
     static public Gamemode gamemode;
     static public bool aiFirst;
@@ -20,7 +20,7 @@ public static class GameManager
     static public string PlayerOneName = "Player 1";
     static public string PlayerTwoName = "Player 2";
 
-    public static List<Tuple<Player, Player>> ReadPlayerScore(Player player)
+    public static List<Match> ReadPlayerScore(Player player)
     {
         return matchHistory[player];
     }
@@ -30,21 +30,44 @@ public static class GameManager
         //Add win for winner
         if (matchHistory.ContainsKey(winner))
         {
-            matchHistory[winner].Add(Tuple.Create(winner, loser));
+            matchHistory[winner].Add(new(false, winner, loser));
         }
         else
         {
-            matchHistory.Add(winner, new List<Tuple<Player, Player>>() { Tuple.Create(winner, loser) });
+            matchHistory.Add(winner, new() { new(false, winner, loser) });
         }
 
         //Add loss for loser
         if (matchHistory.ContainsKey(loser))
         {
-            matchHistory[loser].Add(Tuple.Create(winner, loser));
+            matchHistory[loser].Add(new(false, winner, loser));
         }
         else
         {
-            matchHistory.Add(loser, new List<Tuple<Player, Player>>() { Tuple.Create(winner, loser) });
+            matchHistory.Add(loser, new() { new(false, winner, loser) });
+        }
+    }
+
+    public static void Tie(Player winner, Player loser)
+    {
+        //Add win for winner
+        if (matchHistory.ContainsKey(winner))
+        {
+            matchHistory[winner].Add(new(true, winner, loser));
+        }
+        else
+        {
+            matchHistory.Add(winner, new() { new(true, winner, loser) });
+        }
+
+        //Add loss for loser
+        if (matchHistory.ContainsKey(loser))
+        {
+            matchHistory[loser].Add(new(true, winner, loser));
+        }
+        else
+        {
+            matchHistory.Add(loser, new() { new(true, winner, loser) });
         }
     }
 

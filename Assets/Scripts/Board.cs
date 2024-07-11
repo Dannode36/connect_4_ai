@@ -27,7 +27,7 @@ public class Board
 
     public List<int> ValidCollums()
     {
-        List<int> validCollums = new List<int>();
+        List<int> validCollums = new();
 
         for (int i = 0; i < array.GetLength(1); i++)
         {
