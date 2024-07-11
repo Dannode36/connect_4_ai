@@ -181,7 +181,7 @@ public class GameController : MonoBehaviour
 
     IEnumerator AITurn(int aiCollum)
     {
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.8f);
         _ = DropDisk(currentPlayer, aiCollum);
         Print2DArray(board.array);
         //StartCoroutine(TurnDelay());
@@ -190,8 +190,8 @@ public class GameController : MonoBehaviour
     IEnumerator TurnDelay()
     {
         canvasManager.DisplayTurnInfo(currentPlayer.name + "'s Turn");
+        yield return new WaitForSeconds(0.8f);
         waiting = false;
-        yield return new WaitForSeconds(1);
     }
 
     void Print2DArray(int[,] array)

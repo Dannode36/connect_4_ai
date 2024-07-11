@@ -31,7 +31,7 @@ public class MinMaxAI : Player
         else if (depth == 0)
         {
             int score = board.ScoreBoard(this);
-            return new Tuple<int, float>(0, score);
+            return new Tuple<int, float>(0, score /** (depth + 1)*/);
         }
 
         if (maximizing)
