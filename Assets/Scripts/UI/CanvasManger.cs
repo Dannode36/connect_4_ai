@@ -4,11 +4,12 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Collections.ObjectModel;
 
 public class CanvasManger : MonoBehaviour
 {
-    List<string> winMessages = new List<string> 
-    { 
+    ReadOnlyCollection<string> winMessages = new(new List<string>()
+    {
         "won against", 
         "destroyed", 
         "demolished", 
@@ -19,14 +20,20 @@ public class CanvasManger : MonoBehaviour
         "was better than",
         "owned",
         "beat"
-    };
+    });
 
     public TMP_Text WinTitle;
+    public TMP_Text TurnInfo;
     public GameObject ResetButton;
+
+    public void DisplayTurnInfo(string text)
+    {
+        TurnInfo.text = text;
+    }
 
     public void DisplayWinTitle(string winnerName, string looserName)
     {
-        System.Random random = new System.Random();
+        System.Random random = new();
         int index = random.Next(winMessages.Count);
         
         WinTitle.text = $"{winnerName} {winMessages[index]} {looserName}!";
@@ -34,7 +41,7 @@ public class CanvasManger : MonoBehaviour
 
     public void DisplayWinText(string text)
     {
-        WinTitle.text = $"{text}!";
+        WinTitle.text = text;
     }
 
     public void ShowResetButton(bool active)

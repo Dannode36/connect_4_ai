@@ -6,30 +6,32 @@ using System.Threading.Tasks;
 
 public class MinMaxAI : Player
 {
-    public MinMaxAI(int id, GameController game) : base (id, "AI")
+    public int branches;
+    public MinMaxAI(int id) : base (id, "AI")
     {
 
     }
 
-    public Tuple<int, float> MinMax(Board board, int depth, float alpha, float beta, bool maximizing)
+    public Tuple<int, float> MinMax(Board board, Player opposition, int depth, float alpha, float beta, bool maximizing)
     {
         var validLocations = board.ValidCollums();
-        if (depth == 0 || board.CheckForFull() || board.CheckForWin(board.ai) || board.CheckForWin(board.player1))
+        if (board.CheckForFull())
         {
-            if (board.CheckForWin(board.ai))
-            {
-                return new Tuple<int, float>(0, 1000000000);
-            }
-            else if (board.CheckForWin(board.player1))
-            {
-                return new Tuple<int, float>(0, -1000000000);
-            }
-            if (depth == 0)
-            {
-                int score = board.ScoreBoard(board.ai);
-                return new Tuple<int, float>(0, score);
-            }
             return new Tuple<int, float>(0, 0);
+        }
+        else if (board.CheckForWin(this))
+        {
+            //Console.WriteLine("Win found at depth: " + depth);
+            return new Tuple<int, float>(0, 100000f * (depth + 1));
+        }
+        else if (board.CheckForWin(opposition))
+        {
+            return new Tuple<int, float>(0, -100000f * (depth + 1));
+        }
+        else if (depth == 0)
+        {
+            int score = board.ScoreBoard(this);
+            return new Tuple<int, float>(0, score /** (depth + 1)*/);
         }
 
         if (maximizing)
@@ -39,10 +41,11 @@ public class MinMaxAI : Player
 
             foreach (int col in validLocations)
             {
-                Board boardCopy = new Board(board);
-                boardCopy.DropDisk(board.ai, col);
+                Board boardCopy = new(board);
+                boardCopy.DropDisk(this, col);
 
-                float eval = MinMax(boardCopy, depth - 1, alpha, beta, false).Item2;
+                branches++;
+                float eval = MinMax(boardCopy, opposition, depth - 1, alpha, beta, false).Item2;
                 if (eval > maxEval)
                 {
                     maxEval = eval;
@@ -64,11 +67,11 @@ public class MinMaxAI : Player
 
             foreach (int col in validLocations)
             {
-                Board boardCopy = new Board(board);
-                boardCopy.DropDisk(board.player1, col);
+                Board boardCopy = new(board);
+                boardCopy.DropDisk(opposition, col);
 
-                float eval = MinMax(boardCopy, depth - 1, alpha, beta, true).Item2;
-                //minEval = Mathf.Min(minEval, eval);
+                branches++;
+                float eval = MinMax(boardCopy, opposition, depth - 1, alpha, beta, true).Item2;
                 if (eval < minEval)
                 {
                     minEval = eval;
