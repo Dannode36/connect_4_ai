@@ -174,7 +174,7 @@ public class GameController : MonoBehaviour
         (currentPlayer as MinMaxAI).branches = 0;
 
         stopWatch.Stop();
-        Debug.Log($"AI spent {stopWatch.ElapsedMilliseconds} milliseconds thinking.");
+        Debug.Log($"AI spent {stopWatch.ElapsedMilliseconds}ms thinking.");
 
         StartCoroutine(AITurn(aiMove));
     }
@@ -205,6 +205,6 @@ public class GameController : MonoBehaviour
             }
             printString += Environment.NewLine;
         }
-        print(printString);
+        Debug.Log(printString);
     }
 }
