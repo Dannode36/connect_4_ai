@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using Debug = UnityEngine.Debug;
+using static UnityEngine.Rendering.DebugManager;
 
 public class GameController : MonoBehaviour
 {
@@ -20,8 +21,8 @@ public class GameController : MonoBehaviour
     bool won;
     bool waiting;
 
-    public Player currentPlayer { get; private set; }
-    public Player previousPlayer { get; private set; }
+    public Player CurrentPlayer { get; private set; }
+    public Player PreviousPlayer { get; private set; }
 
     public GameObject baseCollider;
     public Transform[] spawnLocations;
@@ -46,24 +47,30 @@ public class GameController : MonoBehaviour
             case Gamemode.VsAI:
                 if (aiFirst)
                 {
-                    currentPlayer = new MinMaxAI(1);
-                    previousPlayer = new Player(2, GameManager.PlayerOneName);
+                    CurrentPlayer = new MinMaxAI(1);
+                    PreviousPlayer = new Player(2, GameManager.PlayerOneName);
                     waiting = true;
-                    _ = AIMove();
+                    StartCoroutine(AITurn());
                 }
                 else
                 {
-                    currentPlayer = new Player(1, GameManager.PlayerOneName);
-                    previousPlayer = new MinMaxAI(2);
+                    CurrentPlayer = new Player(1, GameManager.PlayerOneName);
+                    PreviousPlayer = new MinMaxAI(2);
                 }
                 break;
+            case Gamemode.Secret:
+                CurrentPlayer = new MinMaxAI(1);
+                PreviousPlayer = new MinMaxAI(2);
+                waiting = true;
+                StartCoroutine(AITurn());
+                break;
             default:
-                currentPlayer = new Player(1, GameManager.PlayerOneName);
-                previousPlayer = new Player(2, GameManager.PlayerTwoName);
+                CurrentPlayer = new Player(1, GameManager.PlayerOneName);
+                PreviousPlayer = new Player(2, GameManager.PlayerTwoName);
                 break;
         }
 
-        canvasManager.DisplayTurnInfo(currentPlayer.name + "'s turn");
+        canvasManager.DisplayTurnInfo(CurrentPlayer.name + "'s turn");
     }
 
     void Update()
@@ -74,7 +81,7 @@ public class GameController : MonoBehaviour
             if (!waiting && screenPercent > 25 && screenPercent < 75)
             {
                 dropPreview.transform.position = new Vector3(Input.mousePosition.x, dropPreview.transform.position.y, dropPreview.transform.position.z);
-                dropPreview.color = currentPlayer.id == 1 ? new Color(1, 0, 0, 0.4f) : new Color(1, 1, 0, 0.4f);
+                dropPreview.color = CurrentPlayer.turnNumber == 1 ? new Color(1, 0, 0, 0.4f) : new Color(1, 1, 0, 0.4f);
                 return;
             }
         }
@@ -114,45 +121,37 @@ public class GameController : MonoBehaviour
         canvasManager.ShowResetButton(true);
     }
 
-    void QuickEndGame()
-    {
-        won = true;
-        canvasManager.DisplayWinText("Game ended!");
-        canvasManager.ShowResetButton(true);
-    }
-
     public void AddDiskButton(int collum)
     {
         if (waiting || won || !board.IsValidLocation( collum)) { return; }
 
         waiting = true;
-        _ = DropDisk(currentPlayer, collum);
+        DropDisk(CurrentPlayer, collum);
     }
 
-    private async Task DropDisk(Player player, int collum)
+    private void DropDisk(Player player, int collum)
     {
         if (board.DropDisk(player, collum))
         {
-            Instantiate(player.id == 1 ? RedDisk : BlueDisk, spawnLocations[collum].transform.position, spawnLocations[collum].transform.rotation);
+            Instantiate(player.turnNumber == 1 ? RedDisk : BlueDisk, spawnLocations[collum].transform.position, spawnLocations[collum].transform.rotation);
 
             if (board.CheckForWin(player))
             {
-                Win(player, previousPlayer);
+                Win(player, PreviousPlayer);
                 return;
             }
             else if (board.CheckForFull())
             {
-                Tie(previousPlayer, currentPlayer); //board should always fill up on the second player
-                Debug.Log("First player is " + previousPlayer.name);
+                Tie(PreviousPlayer, CurrentPlayer); //board should always fill up on the second player
                 return;
             }
 
-            currentPlayer = previousPlayer;
-            previousPlayer = player;
+            CurrentPlayer = PreviousPlayer;
+            PreviousPlayer = player;
 
-            if (currentPlayer is MinMaxAI)
+            if (CurrentPlayer is MinMaxAI)
             {
-                await AIMove();
+                StartCoroutine(AITurn());
             }
             else
             {
@@ -161,35 +160,28 @@ public class GameController : MonoBehaviour
         }
     }
 
-    private async Task AIMove()
+    IEnumerator AITurn()
     {
-        canvasManager.DisplayTurnInfo("AI's Turn");
-
         Stopwatch stopWatch = new();
         stopWatch.Start();
-
-        int aiMove = await Task.Run(() => (currentPlayer as MinMaxAI).MinMax(board, previousPlayer, 7, -Mathf.Infinity, Mathf.Infinity, true).Item1);
-        Debug.Log("Minmax output: " + aiMove);
-        Debug.Log((currentPlayer as MinMaxAI).branches);
-        (currentPlayer as MinMaxAI).branches = 0;
-
+        var minMax = Task.Run(() => (CurrentPlayer as MinMaxAI).MinMax(board, PreviousPlayer, 7, -Mathf.Infinity, Mathf.Infinity, true).Item1);
+        while (!minMax.IsCompleted)
+        {
+            yield return null; //waiting...
+        }
         stopWatch.Stop();
         Debug.Log($"AI spent {stopWatch.ElapsedMilliseconds}ms thinking.");
+        Debug.Log("Minmax output: " + minMax.Result);
 
-        StartCoroutine(AITurn(aiMove));
-    }
+        yield return new WaitForSeconds(0.8f); //Small pause to prevent disk overlap (funky physics)
 
-    IEnumerator AITurn(int aiCollum)
-    {
-        yield return new WaitForSeconds(0.8f);
-        _ = DropDisk(currentPlayer, aiCollum);
+        DropDisk(CurrentPlayer, minMax.Result);
         Print2DArray(board.array);
-        //StartCoroutine(TurnDelay());
     }
 
     IEnumerator TurnDelay()
     {
-        canvasManager.DisplayTurnInfo(currentPlayer.name + "'s Turn");
+        canvasManager.DisplayTurnInfo(CurrentPlayer.name + "'s Turn");
         yield return new WaitForSeconds(0.8f);
         waiting = false;
     }

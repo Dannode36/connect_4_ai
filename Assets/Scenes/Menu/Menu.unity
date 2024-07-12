@@ -677,11 +677,11 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1782186150}
         m_TargetAssemblyTypeName: MenuHandler, Assembly-CSharp
-        m_MethodName: GoBackMenu
-        m_Mode: 2
+        m_MethodName: BackMenu
+        m_Mode: 1
         m_Arguments:
-          m_ObjectArgument: {fileID: 500257480}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -2190,10 +2190,10 @@ MonoBehaviour:
       - m_Target: {fileID: 1782186150}
         m_TargetAssemblyTypeName: MenuHandler, Assembly-CSharp
         m_MethodName: PreLoadGame
-        m_Mode: 2
+        m_Mode: 1
         m_Arguments:
-          m_ObjectArgument: {fileID: 245242241}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -2450,7 +2450,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 476844074}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1782186146}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &476844074
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2696,10 +2708,10 @@ MonoBehaviour:
       - m_Target: {fileID: 1782186150}
         m_TargetAssemblyTypeName: MenuHandler, Assembly-CSharp
         m_MethodName: PreLoadGame
-        m_Mode: 2
+        m_Mode: 1
         m_Arguments:
-          m_ObjectArgument: {fileID: 245242241}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -2827,11 +2839,11 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1782186150}
         m_TargetAssemblyTypeName: MenuHandler, Assembly-CSharp
-        m_MethodName: GoBackMenu
-        m_Mode: 2
+        m_MethodName: BackMenu
+        m_Mode: 1
         m_Arguments:
-          m_ObjectArgument: {fileID: 91109120}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -6181,6 +6193,7 @@ MonoBehaviour:
   MenuCanvas: {fileID: 245242241}
   GameOptionsCanvas: {fileID: 500257480}
   SettingsCanvas: {fileID: 91109120}
+  LeaderboardCanvas: {fileID: 0}
   FirstNameInput: {fileID: 1999392980}
   SecondNameInput: {fileID: 1453832782}
 --- !u!114 &1782186151

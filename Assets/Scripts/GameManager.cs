@@ -1,6 +1,8 @@
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -8,11 +10,26 @@ public enum Gamemode
 {
     VsAI,
     COOP,
+    Secret
+}
+
+[Serializable]
+public class MatchHistory
+{
+    public List<Match> matches;
+    public Dictionary<string, List<string>> players;
+
+    public MatchHistory()
+    {
+        matches = new();
+        players = new();
+    }
 }
 
 public static class GameManager
 {
-    static Dictionary<Player, List<Match>> matchHistory = new();
+    static readonly string savePath = Application.persistentDataPath + "/matches.json";
+    static readonly MatchHistory matchHistory = LoadMatchHistory();
 
     static public Gamemode gamemode;
     static public bool aiFirst;
@@ -20,55 +37,60 @@ public static class GameManager
     static public string PlayerOneName = "Player 1";
     static public string PlayerTwoName = "Player 2";
 
-    public static List<Match> ReadPlayerScore(Player player)
-    {
-        return matchHistory[player];
-    }
 
     public static void Win(Player winner, Player loser)
     {
+        Match match = new(false, winner, loser);
+        matchHistory.matches.Add(match);
+
         //Add win for winner
-        if (matchHistory.ContainsKey(winner))
+        if (matchHistory.players.ContainsKey(winner.name))
         {
-            matchHistory[winner].Add(new(false, winner, loser));
+            matchHistory.players[winner.name].Add(match.id);
         }
         else
         {
-            matchHistory.Add(winner, new() { new(false, winner, loser) });
+            matchHistory.players.Add(winner.name, new() { match.id });
         }
 
         //Add loss for loser
-        if (matchHistory.ContainsKey(loser))
+        if (matchHistory.players.ContainsKey(loser.name))
         {
-            matchHistory[loser].Add(new(false, winner, loser));
+            matchHistory.players[loser.name].Add(match.id);
         }
         else
         {
-            matchHistory.Add(loser, new() { new(false, winner, loser) });
+            matchHistory.players.Add(loser.name, new() { match.id });
         }
+
+        SaveMatchHistory();
     }
 
-    public static void Tie(Player winner, Player loser)
+    public static void Tie(Player playerOne, Player playerTwo)
     {
-        //Add win for winner
-        if (matchHistory.ContainsKey(winner))
+        Match match = new(true, playerOne, playerTwo);
+        matchHistory.matches.Add(match);
+
+        //Add tie for player 1
+        if (matchHistory.players.ContainsKey(playerOne.name))
         {
-            matchHistory[winner].Add(new(true, winner, loser));
+            matchHistory.players[playerOne.name].Add(match.id);
         }
         else
         {
-            matchHistory.Add(winner, new() { new(true, winner, loser) });
+            matchHistory.players.Add(playerOne.name, new() { match.id });
         }
 
-        //Add loss for loser
-        if (matchHistory.ContainsKey(loser))
+        //Add tie for player 2
+        if (matchHistory.players.ContainsKey(playerTwo.name))
         {
-            matchHistory[loser].Add(new(true, winner, loser));
+            matchHistory.players[playerTwo.name].Add(match.id);
         }
         else
         {
-            matchHistory.Add(loser, new() { new(true, winner, loser) });
+            matchHistory.players.Add(playerTwo.name, new() { match.id });
         }
+        SaveMatchHistory();
     }
 
     public static void NewGame(bool vsAi, bool aiFirst)
@@ -80,5 +102,20 @@ public static class GameManager
 
             }
         }
+    }
+
+    static MatchHistory LoadMatchHistory()
+    {
+        if (File.Exists(savePath))
+        {
+            return JsonConvert.DeserializeObject<MatchHistory>(File.ReadAllText(savePath)) ?? new();
+        }
+        Debug.LogWarning("Save file not found. Making a new one");
+        return new();
+    }
+
+    static void SaveMatchHistory()
+    {
+        File.WriteAllText(savePath, JsonConvert.SerializeObject(matchHistory));
     }
 }
