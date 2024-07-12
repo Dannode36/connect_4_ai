@@ -11,10 +11,29 @@ public class MenuHandler : MonoBehaviour
     public GameObject MenuCanvas;
     public GameObject GameOptionsCanvas;
     public GameObject SettingsCanvas;
+    public GameObject LeaderboardCanvas;
+
     public TMP_InputField FirstNameInput;
     public TMP_InputField SecondNameInput;
 
     Stack<GameObject> menuStack = new();
+
+    private void Start()
+    {
+        menuStack = new();
+        menuStack.Push(MenuCanvas);
+    }
+
+    void Update()
+    {
+        if(Input.GetKey(KeyCode.BackQuote) && Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.RightControl))
+        {
+            GameManager.gamemode = Gamemode.Secret;
+            GameManager.PlayerOneName = "Tom";
+            GameManager.PlayerTwoName = "Jerry";
+            SceneManager.LoadSceneAsync(1);
+        }
+    }
 
     public void SetGamemode(bool vsAi)
     {
@@ -28,9 +47,9 @@ public class MenuHandler : MonoBehaviour
 
     public void StartGame()
     {
-        SceneManager.LoadSceneAsync(1);
         GameManager.PlayerOneName = FirstNameInput.text;
         GameManager.PlayerTwoName = SecondNameInput.text;
+        SceneManager.LoadSceneAsync(1);
     }
 
     public void LoadMenuScene()
@@ -38,31 +57,40 @@ public class MenuHandler : MonoBehaviour
         SceneManager.LoadSceneAsync(0);
     }
 
-    public void PreLoadGame(GameObject activeCanvas)
+    public void PreLoadGame()
     {
         SecondNameInput.interactable = !(GameManager.gamemode == Gamemode.VsAI);
-        menuStack.Push(activeCanvas);
-        activeCanvas.SetActive(false);
-        GameOptionsCanvas.SetActive(true);
+        OpenMenu(GameOptionsCanvas);
     }
 
-    public void EnterSettingsMenu(GameObject activeCanvas)
+    public void EnterSettingsMenu()
     {
-        menuStack.Push(activeCanvas);
-        activeCanvas.SetActive(false);
-        SettingsCanvas.SetActive(true);
+        OpenMenu(SettingsCanvas);
     }
 
-    public void GoBackMenu(GameObject activeCanvas)
+    public void EnterLeaderboardMenu()
     {
-        activeCanvas.SetActive(false);
-        if(menuStack.Count == 0)
+        OpenMenu(LeaderboardCanvas);
+    }
+
+    public void BackMenu()
+    {
+        if(menuStack.Count < 2) //this should never happen
         {
             MenuCanvas.SetActive(true);
         }
         else
         {
-            menuStack.Pop().SetActive(true);
+            menuStack.Pop().SetActive(false);
+            menuStack.Peek().SetActive(true);
         }
+    }
+
+    private void OpenMenu(GameObject canvas)
+    {
+        menuStack.Peek().SetActive(false);
+
+        menuStack.Push(canvas);
+        menuStack.Peek().SetActive(true);
     }
 }

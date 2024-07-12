@@ -53,7 +53,7 @@ public class Board
 
     public bool CheckForWin(Player currentPlayer)
     {
-        int player = currentPlayer.id;
+        int player = currentPlayer.turnNumber;
 
         // horizontalCheck 
         for (int j = 0; j < array.GetLength(1) - 3; j++)
@@ -132,11 +132,11 @@ public class Board
 
                 for (int x = 0; x < 4; x++)
                 {
-                    if (array[i, j + x] == currentPlayer.id)
+                    if (array[i, j + x] == currentPlayer.turnNumber)
                     {
                         playerPiece++;
                     }
-                    else if (array[i, j + x] == (currentPlayer.id == 1 ? 2 : 1))
+                    else if (array[i, j + x] == (currentPlayer.turnNumber == 1 ? 2 : 1))
                     {
                         opPiece++;
                     }
@@ -162,11 +162,11 @@ public class Board
 
                 for (int x = 0; x < 4; x++)
                 {
-                    if (array[i + x, j] == currentPlayer.id)
+                    if (array[i + x, j] == currentPlayer.turnNumber)
                     {
                         playerPiece++;
                     }
-                    else if (array[i + x, j] == (currentPlayer.id == 1 ? 2 : 1))
+                    else if (array[i + x, j] == (currentPlayer.turnNumber == 1 ? 2 : 1))
                     {
                         opPiece++;
                     }
@@ -192,11 +192,11 @@ public class Board
 
                 for (int x = 0; x < 4; x++)
                 {
-                    if (array[i - x, j + x] == currentPlayer.id)
+                    if (array[i - x, j + x] == currentPlayer.turnNumber)
                     {
                         playerPiece++;
                     }
-                    else if (array[i - x, j + x] == (currentPlayer.id == 1 ? 2 : 1))
+                    else if (array[i - x, j + x] == (currentPlayer.turnNumber == 1 ? 2 : 1))
                     {
                         opPiece++;
                     }
@@ -222,11 +222,11 @@ public class Board
 
                 for (int x = 0; x < 4; x++)
                 {
-                    if (array[i - x, j - x] == currentPlayer.id)
+                    if (array[i - x, j - x] == currentPlayer.turnNumber)
                     {
                         playerPiece++;
                     }
-                    else if (array[i - x, j - x] == (currentPlayer.id == 1 ? 2 : 1))
+                    else if (array[i - x, j - x] == (currentPlayer.turnNumber == 1 ? 2 : 1))
                     {
                         opPiece++;
                     }
@@ -272,7 +272,7 @@ public class Board
         {
             if (array[i, collum] == 0)
             {
-                array[i, collum] = player.id;
+                array[i, collum] = player.turnNumber;
                 return true;
             }
         }

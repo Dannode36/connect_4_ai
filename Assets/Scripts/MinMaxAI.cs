@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 public class MinMaxAI : Player
 {
+    [NonSerialized]
     public int branches;
     public MinMaxAI(int id) : base (id, "AI")
     {
@@ -31,7 +32,7 @@ public class MinMaxAI : Player
         else if (depth == 0)
         {
             int score = board.ScoreBoard(this);
-            return new Tuple<int, float>(0, score /** (depth + 1)*/);
+            return new Tuple<int, float>(0, score);
         }
 
         if (maximizing)
